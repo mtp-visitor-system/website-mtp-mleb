@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MTP MLEB — Pencatatan Pengunjung</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F5F3EE;
+      --card: #FFFFFF;
+      --ink: #1D1D1B;
+      --muted: #6D6A63;
+      --line: #DEDAD1;
+      --line-strong: #1D1D1B;
+      --tint: #F0EDE5;
+      --danger: #A83333;
+      --danger-soft: #FFF0F0;
+      --ok: #2F5D46;
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: var(--bg); }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input, textarea { font: inherit; }
+
+    button { cursor: pointer; }
+
+    .app-shell {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .hidden { display: none !important; }
+
+    .idle-screen {
+      min-height: calc(100vh - 32px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 24px;
+    }
+
+    .brand-card,
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .brand-card { padding: 28px 22px; }
+
+    .eyebrow,
+    label,
+    .counter-label,
+    .tab-button,
+    .date-line,
+    .step-list li::marker {
+      font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: -0.02em;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      margin-bottom: 12px;
+      font-size: clamp(30px, 8vw, 42px);
+      line-height: 0.98;
+      letter-spacing: -0.06em;
+    }
+
+    h2 {
+      margin-bottom: 8px;
+      font-size: 22px;
+      letter-spacing: -0.04em;
+    }
+
+    h3 {
+      margin-bottom: 8px;
+      font-size: 17px;
+      letter-spacing: -0.03em;
+    }
+
+    p { color: var(--muted); line-height: 1.5; }
+
+    .date-line {
+      display: inline-flex;
+      width: fit-content;
+      margin-top: 10px;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--ink);
+      font-size: 13px;
+      background: var(--bg);
+    }
+
+    .primary-button,
+    .secondary-button,
+    .danger-button {
+      width: 100%;
+      min-height: 50px;
+      border-radius: 999px;
+      border: 1px solid var(--ink);
+      font-weight: 700;
+    }
+
+    .primary-button {
+      background: var(--ink);
+      color: white;
+    }
+
+    .secondary-button {
+      background: white;
+      color: var(--ink);
+    }
+
+    .danger-button {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: white;
+    }
+
+    .top-header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: -16px -16px 16px;
+      padding: 12px 16px;
+      background: rgba(245, 243, 238, 0.96);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .header-title { min-width: 0; }
+
+    .header-title strong {
+      display: block;
+      font-size: 16px;
+      letter-spacing: -0.04em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .header-title span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+    }
+
+    .end-button {
+      flex: 0 0 auto;
+      min-height: 38px;
+      padding: 0 14px;
+      border: 1px solid var(--danger);
+      border-radius: 999px;
+      background: var(--danger-soft);
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 14px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: white;
+    }
+
+    .tab-button {
+      min-height: 42px;
+      padding: 7px 8px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.15;
+    }
+
+    .tab-button.active {
+      border-color: var(--ink);
+      background: var(--tint);
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .card {
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    .form-grid { display: grid; gap: 14px; }
+
+    .field { display: grid; gap: 7px; }
+
+    label,
+    .counter-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      min-height: 48px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: white;
+      color: var(--ink);
+      padding: 12px 13px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--ink);
+    }
+
+    .category-grid { display: grid; gap: 10px; }
+
+    .category-card {
+      position: relative;
+      display: block;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: white;
+    }
+
+    .category-card input {
+      position: absolute;
+      inset: 0;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .category-card:has(input:checked) {
+      border-color: var(--line-strong);
+      background: var(--tint);
+    }
+
+    .category-title {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .category-desc {
+      display: block;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .counter-card {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: var(--tint);
+    }
+
+    .counter-value {
+      font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 28px;
+      font-weight: 500;
+    }
+
+    .instructions {
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .instructions li { margin-bottom: 8px; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      z-index: 20;
+      width: calc(100% - 32px);
+      max-width: 448px;
+      padding: 13px 16px;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      background: var(--ink);
+      color: white;
+      text-align: center;
+      font-weight: 700;
+      transform: translate(-50%, 120px);
+      transition: transform 180ms ease;
+    }
+
+    .toast.show { transform: translate(-50%, 0); }
+    .toast.error { background: var(--danger); border-color: var(--danger); }
+
+    dialog {
+      width: calc(100% - 32px);
+      max-width: 430px;
+      padding: 0;
+      border: 1px solid var(--ink);
+      border-radius: 20px;
+      background: white;
+      color: var(--ink);
+    }
+
+    dialog::backdrop { background: rgba(29, 29, 27, 0.48); }
+
+    .dialog-inner { padding: 20px; }
+
+    .dialog-actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .small-note {
+      margin: 8px 0 0;
+      font-size: 13px;
+    }
+
+    @supports not selector(:has(*)) {
+      .category-card.selected {
+        border-color: var(--line-strong);
+        background: var(--tint);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <section id="idleScreen" class="idle-screen">
+      <div class="brand-card">
+        <p class="eyebrow">MTP TMII ke MLEB</p>
+        <h1>MTP MLEB — Pencatatan Pengunjung</h1>
+        <p>Catat hanya pengunjung yang didapat melalui program MTP di TMII, termasuk penerima brosur, calon pengunjung yang tertarik, dan pengunjung yang benar-benar datang ke MLEB.</p>
+        <span id="idleDate" class="date-line"></span>
+      </div>
+      <button id="startSessionButton" class="primary-button" type="button">Mulai Sesi</button>
+    </section>
+
+    <section id="activeApp" class="hidden">
+      <header class="top-header">
+        <div class="header-title">
+          <strong>MTP MLEB</strong>
+          <span id="activeDate"></span>
+        </div>
+        <button id="endSessionButton" class="end-button" type="button">Akhiri Sesi</button>
+      </header>
+
+      <nav class="tabs" aria-label="Menu utama">
+        <button class="tab-button active" type="button" data-tab="pengunjung">Per Pengunjung</button>
+        <button class="tab-button" type="button" data-tab="brosur">Rekap Brosur</button>
+        <button class="tab-button" type="button" data-tab="pengaturan">Pengaturan</button>
+      </nav>
+
+      <section id="tab-pengunjung" class="tab-panel">
+        <form id="visitorForm" class="card form-grid">
+          <div>
+            <h2>Per Pengunjung</h2>
+            <p class="small-note">Input setiap interaksi yang berasal dari aktivitas MTP di TMII.</p>
+          </div>
+
+          <div class="field">
+            <label for="visitorName">Nama pengunjung</label>
+            <input id="visitorName" name="nama_pengunjung" type="text" autocomplete="name" placeholder="Opsional" />
+          </div>
+
+          <div class="field">
+            <label for="visitorPhone">Nomor HP</label>
+            <input id="visitorPhone" name="no_hp" type="tel" inputmode="tel" autocomplete="tel" placeholder="Opsional" />
+          </div>
+
+          <div class="field">
+            <label for="visitorCount">Jumlah orang (termasuk yang bersama mereka)</label>
+            <input id="visitorCount" name="jumlah_orang" type="number" min="1" value="1" required />
+          </div>
+
+          <div class="field">
+            <label>Kategori interaksi</label>
+            <div id="categoryGrid" class="category-grid" role="radiogroup" aria-label="Kategori interaksi"></div>
+          </div>
+
+          <div class="field">
+            <label for="visitorNotes">Catatan tambahan</label>
+            <textarea id="visitorNotes" name="catatan" placeholder="Opsional"></textarea>
+          </div>
+
+          <button class="primary-button" type="submit">Simpan &amp; input berikutnya</button>
+        </form>
+      </section>
+
+      <section id="tab-brosur" class="tab-panel hidden">
+        <form id="brochureForm" class="card form-grid">
+          <div>
+            <h2>Rekap Brosur</h2>
+            <p class="small-note">Isi sekali di akhir sesi untuk mencatat distribusi brosur voucher diskon MTP.</p>
+          </div>
+
+          <div class="field">
+            <label for="brochureBrought">Brosur dibawa</label>
+            <input id="brochureBrought" type="number" min="0" required />
+          </div>
+
+          <div class="field">
+            <label for="brochureLeft">Brosur sisa</label>
+            <input id="brochureLeft" type="number" min="0" required />
+          </div>
+
+          <div class="counter-card" aria-live="polite">
+            <span class="counter-label">Brosur tersebar</span>
+            <strong id="brochureSpread" class="counter-value">0</strong>
+          </div>
+
+          <button class="primary-button" type="submit">Simpan rekap brosur</button>
+        </form>
+      </section>
+
+      <section id="tab-pengaturan" class="tab-panel hidden">
+        <div class="card form-grid">
+          <div>
+            <h2>Pengaturan</h2>
+            <p class="small-note">Simpan URL Google Apps Script Web App agar data terkirim ke Google Sheets.</p>
+          </div>
+
+          <form id="settingsForm" class="form-grid">
+            <div class="field">
+              <label for="scriptUrl">Google Apps Script URL</label>
+              <input id="scriptUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" />
+            </div>
+            <button class="primary-button" type="submit">Simpan URL</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>Instruksi setup Google Apps Script</h3>
+          <ol class="instructions">
+            <li>Buat Google Sheet baru untuk data MTP MLEB.</li>
+            <li>Buka Extensions, lalu Apps Script.</li>
+            <li>Salin isi file <strong>apps-script.js</strong> ke editor Apps Script dan simpan.</li>
+            <li>Pilih Deploy, lalu New deployment.</li>
+            <li>Pilih type Web app.</li>
+            <li>Set Execute as menjadi Me.</li>
+            <li>Set Who has access menjadi Anyone.</li>
+            <li>Klik Deploy, lalu salin Web App URL ke kolom pengaturan ini.</li>
+          </ol>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="endDialog" aria-labelledby="endDialogTitle">
+    <div class="dialog-inner">
+      <h2 id="endDialogTitle">Akhiri sesi hari ini?</h2>
+      <p>Sistem akan mengirim rekap sesi, menghapus data sesi lokal, dan kembali ke layar Mulai Sesi. Pastikan semua input pengunjung dan rekap brosur sudah disimpan.</p>
+      <div class="dialog-actions">
+        <button id="confirmEndSession" class="danger-button" type="button">Ya, akhiri sesi</button>
+        <button id="cancelEndSession" class="secondary-button" type="button">Batal, lanjut input</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEYS = {
+      scriptUrl: "mtpMlebScriptUrl",
+      session: "mtpMlebSession"
+    };
+
+    const TEAM_NAME = "MTP TMII";
+
+    const categories = [
+      ["Terima brosur, langsung pergi", "Ambil brosur tapi tidak mau dengar penjelasan"],
+      ["Ditawari, tertarik minta info lebih", "Mau dengar penjelasan tim, belum komit ke MLEB"],
+      ["Ditawari, tertarik tapi menolak ke MLEB", "Sudah dijelaskan tapi tidak mau datang"],
+      ["Setuju ke MLEB, naik buggy", "Mau diantar ke MLEB via buggy"],
+      ["Setuju ke MLEB, jalan sendiri", "Mau ke MLEB tapi tidak naik buggy"],
+      ["Tiba di MLEB, tidak masuk", "Sampai di MLEB tapi urung masuk"],
+      ["Masuk MLEB tanpa voucher", "Masuk MLEB dari program MTP, tidak pakai voucher"],
+      ["Masuk MLEB + pakai voucher diskon", "Masuk MLEB dan gunakan voucher dari brosur MTP"],
+      ["Pengunjung asing (turis), tertarik ke MLEB", "Foreign tourist who showed interest"],
+      ["Sudah pernah ke MLEB, tertarik kembali", "Returning visitor interested to come again"]
+    ];
+
+    const idleScreen = document.getElementById("idleScreen");
+    const activeApp = document.getElementById("activeApp");
+    const idleDate = document.getElementById("idleDate");
+    const activeDate = document.getElementById("activeDate");
+    const startSessionButton = document.getElementById("startSessionButton");
+    const endSessionButton = document.getElementById("endSessionButton");
+    const endDialog = document.getElementById("endDialog");
+    const confirmEndSession = document.getElementById("confirmEndSession");
+    const cancelEndSession = document.getElementById("cancelEndSession");
+    const categoryGrid = document.getElementById("categoryGrid");
+    const visitorForm = document.getElementById("visitorForm");
+    const visitorName = document.getElementById("visitorName");
+    const visitorPhone = document.getElementById("visitorPhone");
+    const visitorCount = document.getElementById("visitorCount");
+    const visitorNotes = document.getElementById("visitorNotes");
+    const brochureForm = document.getElementById("brochureForm");
+    const brochureBrought = document.getElementById("brochureBrought");
+    const brochureLeft = document.getElementById("brochureLeft");
+    const brochureSpread = document.getElementById("brochureSpread");
+    const settingsForm = document.getElementById("settingsForm");
+    const scriptUrl = document.getElementById("scriptUrl");
+    const toast = document.getElementById("toast");
+
+    let toastTimer;
+
+    function pad(value) {
+      return String(value).padStart(2, "0");
+    }
+
+    function dateKey(date = new Date()) {
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    }
+
+    function displayDate(date = new Date()) {
+      return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+    }
+
+    function displayTime(date = new Date()) {
+      return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+
+    function getSession() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEYS.session));
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function saveSession(session) {
+      localStorage.setItem(STORAGE_KEYS.session, JSON.stringify(session));
+    }
+
+    function clearSession() {
+      localStorage.removeItem(STORAGE_KEYS.session);
+    }
+
+    function showToast(message, isError = false) {
+      clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.toggle("error", isError);
+      toast.classList.add("show");
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    async function postToSheets(payload) {
+      const url = localStorage.getItem(STORAGE_KEYS.scriptUrl);
+      if (!url) {
+        throw new Error("URL Google Apps Script belum diisi.");
+      }
+
+      await fetch(url, {
+        method: "POST",
+        mode: "no-cors",
+        body: JSON.stringify(payload)
+      });
+    }
+
+    function renderShell(isActive) {
+      idleDate.textContent = displayDate();
+      activeDate.textContent = displayDate();
+      idleScreen.classList.toggle("hidden", isActive);
+      activeApp.classList.toggle("hidden", !isActive);
+    }
+
+    function startSession() {
+      const now = new Date();
+      saveSession({
+        dateKey: dateKey(now),
+        tanggal: displayDate(now),
+        startTime: displayTime(now),
+        totalEntries: 0
+      });
+      renderShell(true);
+    }
+
+    async function submitSessionSummary(session) {
+      await postToSheets({
+        type: "sesi",
+        tanggal: session.tanggal,
+        waktu_mulai: session.startTime,
+        waktu_selesai: displayTime(),
+        total_entri: Number(session.totalEntries || 0)
+      });
+    }
+
+    async function endSession({ silent = false } = {}) {
+      const session = getSession();
+      if (!session) {
+        renderShell(false);
+        return;
+      }
+
+      try {
+        await submitSessionSummary(session);
+        if (!silent) showToast("Sesi diakhiri");
+      } catch (error) {
+        if (!silent) showToast(error.message, true);
+      } finally {
+        clearSession();
+        renderShell(false);
+      }
+    }
+
+    function resumeOrResetSession() {
+      const session = getSession();
+      if (!session) {
+        renderShell(false);
+        return;
+      }
+
+      if (session.dateKey === dateKey()) {
+        renderShell(true);
+        return;
+      }
+
+      endSession({ silent: true });
+    }
+
+    function buildCategories() {
+      categoryGrid.innerHTML = categories.map(([title, desc], index) => `
+        <label class="category-card">
+          <input type="radio" name="kategori" value="${title}" ${index === 0 ? "required" : ""}>
+          <span class="category-title">${title}</span>
+          <span class="category-desc">${desc}</span>
+        </label>
+      `).join("");
+
+      categoryGrid.addEventListener("change", () => {
+        document.querySelectorAll(".category-card").forEach((card) => {
+          const input = card.querySelector("input");
+          card.classList.toggle("selected", input.checked);
+        });
+      });
+    }
+
+    function selectedCategory() {
+      const selected = visitorForm.querySelector('input[name="kategori"]:checked');
+      return selected ? selected.value : "";
+    }
+
+    function resetVisitorFormKeepCount() {
+      const currentCount = visitorCount.value || "1";
+      visitorName.value = "";
+      visitorPhone.value = "";
+      visitorNotes.value = "";
+      visitorForm.querySelectorAll('input[name="kategori"]').forEach((radio) => {
+        radio.checked = false;
+        radio.closest(".category-card").classList.remove("selected");
+      });
+      visitorCount.value = currentCount;
+      visitorName.focus();
+    }
+
+    function updateBrochureSpread() {
+      const brought = Number(brochureBrought.value || 0);
+      const left = Number(brochureLeft.value || 0);
+      brochureSpread.textContent = String(brought - left);
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll(".tab-button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.tab === tabName);
+      });
+      document.querySelectorAll(".tab-panel").forEach((panel) => {
+        panel.classList.toggle("hidden", panel.id !== `tab-${tabName}`);
+      });
+    }
+
+    startSessionButton.addEventListener("click", startSession);
+
+    endSessionButton.addEventListener("click", () => {
+      if (typeof endDialog.showModal === "function") {
+        endDialog.showModal();
+      }
+    });
+
+    endDialog.addEventListener("cancel", (event) => event.preventDefault());
+    cancelEndSession.addEventListener("click", () => endDialog.close());
+    confirmEndSession.addEventListener("click", async () => {
+      confirmEndSession.disabled = true;
+      await endSession();
+      confirmEndSession.disabled = false;
+      endDialog.close();
+    });
+
+    document.querySelectorAll(".tab-button").forEach((button) => {
+      button.addEventListener("click", () => switchTab(button.dataset.tab));
+    });
+
+    visitorForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const count = Number(visitorCount.value);
+      const category = selectedCategory();
+
+      if (!Number.isFinite(count) || count < 1) {
+        showToast("Jumlah orang minimal 1", true);
+        return;
+      }
+
+      if (!category) {
+        showToast("Pilih kategori interaksi", true);
+        return;
+      }
+
+      const session = getSession();
+      const now = new Date();
+      const payload = {
+        type: "pengunjung",
+        tanggal: displayDate(now),
+        waktu: displayTime(now),
+        nama_pengunjung: visitorName.value.trim(),
+        no_hp: visitorPhone.value.trim(),
+        jumlah_orang: count,
+        kategori: category,
+        catatan: visitorNotes.value.trim()
+      };
+
+      try {
+        await postToSheets(payload);
+        if (session) {
+          session.totalEntries = Number(session.totalEntries || 0) + 1;
+          saveSession(session);
+        }
+        resetVisitorFormKeepCount();
+        showToast("Tersimpan");
+      } catch (error) {
+        showToast(error.message, true);
+      }
+    });
+
+    [brochureBrought, brochureLeft].forEach((input) => input.addEventListener("input", updateBrochureSpread));
+
+    brochureForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const brought = Number(brochureBrought.value);
+      const left = Number(brochureLeft.value);
+      const spread = brought - left;
+
+      if (!Number.isFinite(brought) || !Number.isFinite(left) || brought < 0 || left < 0) {
+        showToast("Isi jumlah brosur dengan benar", true);
+        return;
+      }
+
+      try {
+        await postToSheets({
+          type: "brosur",
+          tanggal: displayDate(),
+          nama_tim: TEAM_NAME,
+          dibawa: brought,
+          sisa: left,
+          tersebar: spread
+        });
+        showToast("Tersimpan");
+      } catch (error) {
+        showToast(error.message, true);
+      }
+    });
+
+    settingsForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      localStorage.setItem(STORAGE_KEYS.scriptUrl, scriptUrl.value.trim());
+      showToast("URL tersimpan");
+    });
+
+    buildCategories();
+    updateBrochureSpread();
+    scriptUrl.value = localStorage.getItem(STORAGE_KEYS.scriptUrl) || "";
+    resumeOrResetSession();
+  </script>
+</body>
+</html>
