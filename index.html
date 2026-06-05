@@ -4,22 +4,46 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MTP MLEB — Pencatatan Pengunjung</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #F5F3EE;
+      color-scheme: dark;
+      --bg: #050708;
+      --bg-soft: #0A1114;
+      --card: #10181C;
+      --card-elevated: #152227;
+      --ink: #F7FBFC;
+      --muted: #AAB8BD;
+      --line: #263941;
+      --line-strong: #25B6C7;
+      --tint: rgba(37, 182, 199, 0.14);
+      --accent: #20AFC1;
+      --accent-strong: #15D2E5;
+      --accent-ink: #031416;
+      --danger: #F87171;
+      --danger-bg: rgba(248, 113, 113, 0.14);
+      --ok: #34D399;
+      --shadow: 0 18px 55px rgba(0, 0, 0, 0.35);
+      --radius: 20px;
+    }
+
+    html[data-theme="light"] {
+      color-scheme: light;
+      --bg: #F7FAFA;
+      --bg-soft: #EEF7F8;
       --card: #FFFFFF;
-      --ink: #1D1D1B;
-      --muted: #6D6A63;
-      --line: #DEDAD1;
-      --line-strong: #1D1D1B;
-      --tint: #F0EDE5;
-      --danger: #A83333;
-      --danger-soft: #FFF0F0;
-      --ok: #2F5D46;
-      --radius: 18px;
+      --card-elevated: #FFFFFF;
+      --ink: #142126;
+      --muted: #5C6F76;
+      --line: #D8E4E7;
+      --line-strong: #0B8798;
+      --tint: rgba(11, 135, 152, 0.12);
+      --accent: #0B8798;
+      --accent-strong: #087080;
+      --accent-ink: #FFFFFF;
+      --danger: #B42318;
+      --danger-bg: #FFF1F0;
+      --ok: #167C55;
+      --shadow: 0 18px 45px rgba(17, 34, 40, 0.12);
     }
 
     * { box-sizing: border-box; }
@@ -29,32 +53,84 @@
     body {
       margin: 0;
       min-height: 100vh;
-      background: var(--bg);
+      background:
+        radial-gradient(circle at top left, rgba(32, 175, 193, 0.20), transparent 32rem),
+        linear-gradient(180deg, var(--bg-soft) 0%, var(--bg) 46%);
       color: var(--ink);
-      font-family: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Arial, Helvetica, sans-serif;
+      font-weight: 400;
       -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
 
     button, input, textarea { font: inherit; }
 
     button { cursor: pointer; }
 
+    button:disabled { cursor: wait; opacity: 0.72; }
+
     .app-shell {
       width: 100%;
       max-width: 480px;
       min-height: 100vh;
       margin: 0 auto;
-      padding: 16px;
+      padding: 14px 16px 22px;
     }
 
     .hidden { display: none !important; }
 
+    .app-brand-bar {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 76px;
+      margin-bottom: 12px;
+    }
+
+    .app-logo {
+      width: clamp(72px, 20vw, 88px);
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.18));
+    }
+
+    .theme-toggle {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--card);
+      color: var(--ink);
+      box-shadow: var(--shadow);
+      transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+    }
+
+    .theme-toggle:focus-visible,
+    .tab-button:focus-visible,
+    .primary-button:focus-visible,
+    .secondary-button:focus-visible,
+    .danger-button:focus-visible,
+    .end-button:focus-visible {
+      outline: 3px solid rgba(32, 175, 193, 0.35);
+      outline-offset: 2px;
+    }
+
+    .theme-icon { font-size: 20px; line-height: 1; }
+
     .idle-screen {
-      min-height: calc(100vh - 32px);
+      min-height: calc(100vh - 124px);
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 24px;
+      gap: 18px;
     }
 
     .brand-card,
@@ -62,80 +138,94 @@
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: var(--radius);
+      box-shadow: var(--shadow);
     }
 
-    .brand-card { padding: 28px 22px; }
+    .brand-card {
+      padding: 26px 20px;
+      overflow: hidden;
+    }
 
     .eyebrow,
     label,
     .counter-label,
     .tab-button,
-    .date-line,
-    .step-list li::marker {
-      font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      letter-spacing: -0.02em;
+    .date-line {
+      letter-spacing: 0.02em;
     }
 
     .eyebrow {
-      margin: 0 0 8px;
-      color: var(--muted);
+      margin: 0 0 10px;
+      color: var(--accent-strong);
       font-size: 12px;
+      font-weight: 700;
       text-transform: uppercase;
     }
 
     h1, h2, h3, p { margin-top: 0; }
 
     h1 {
-      margin-bottom: 12px;
-      font-size: clamp(30px, 8vw, 42px);
-      line-height: 0.98;
-      letter-spacing: -0.06em;
+      margin-bottom: 14px;
+      font-size: clamp(28px, 8vw, 40px);
+      font-weight: 700;
+      line-height: 1.02;
+      letter-spacing: -0.045em;
     }
 
     h2 {
       margin-bottom: 8px;
-      font-size: 22px;
-      letter-spacing: -0.04em;
+      font-size: 23px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
     }
 
     h3 {
       margin-bottom: 8px;
-      font-size: 17px;
-      letter-spacing: -0.03em;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
     }
 
-    p { color: var(--muted); line-height: 1.5; }
+    p { color: var(--muted); line-height: 1.55; }
 
     .date-line {
       display: inline-flex;
       width: fit-content;
-      margin-top: 10px;
-      padding: 7px 10px;
+      margin-top: 12px;
+      padding: 8px 11px;
       border: 1px solid var(--line);
       border-radius: 999px;
       color: var(--ink);
       font-size: 13px;
-      background: var(--bg);
+      font-weight: 600;
+      background: var(--tint);
     }
 
     .primary-button,
     .secondary-button,
     .danger-button {
       width: 100%;
-      min-height: 50px;
+      min-height: 52px;
       border-radius: 999px;
-      border: 1px solid var(--ink);
+      border: 1px solid transparent;
       font-weight: 700;
+      transition: transform 140ms ease, border-color 160ms ease, background 160ms ease;
     }
 
     .primary-button {
-      background: var(--ink);
-      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: var(--accent-ink);
+      box-shadow: 0 12px 28px rgba(32, 175, 193, 0.24);
     }
 
+    .primary-button:active,
+    .secondary-button:active,
+    .danger-button:active { transform: translateY(1px); }
+
     .secondary-button {
-      background: white;
+      background: var(--card);
       color: var(--ink);
+      border-color: var(--line);
     }
 
     .danger-button {
@@ -152,18 +242,24 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin: -16px -16px 16px;
+      margin: 0 -16px 16px;
       padding: 12px 16px;
-      background: rgba(245, 243, 238, 0.96);
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
       border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+    }
+
+    @supports not (background: color-mix(in srgb, black, white)) {
+      .top-header { background: var(--bg); }
     }
 
     .header-title { min-width: 0; }
 
     .header-title strong {
       display: block;
-      font-size: 16px;
-      letter-spacing: -0.04em;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -171,19 +267,19 @@
 
     .header-title span {
       display: block;
-      margin-top: 2px;
+      margin-top: 3px;
       color: var(--muted);
-      font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 12px;
+      font-weight: 600;
     }
 
     .end-button {
       flex: 0 0 auto;
-      min-height: 38px;
+      min-height: 40px;
       padding: 0 14px;
       border: 1px solid var(--danger);
       border-radius: 999px;
-      background: var(--danger-soft);
+      background: var(--danger-bg);
       color: var(--danger);
       font-weight: 700;
     }
@@ -191,44 +287,47 @@
     .tabs {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
+      gap: 7px;
       margin-bottom: 14px;
-      padding: 4px;
+      padding: 5px;
       border: 1px solid var(--line);
-      border-radius: 999px;
-      background: white;
+      border-radius: 18px;
+      background: var(--card);
+      box-shadow: var(--shadow);
     }
 
     .tab-button {
-      min-height: 42px;
-      padding: 7px 8px;
+      min-height: 44px;
+      padding: 8px 7px;
       border: 1px solid transparent;
-      border-radius: 999px;
+      border-radius: 14px;
       background: transparent;
       color: var(--muted);
-      font-size: 11px;
+      font-size: 12px;
+      font-weight: 700;
       line-height: 1.15;
     }
 
     .tab-button.active {
-      border-color: var(--ink);
+      border-color: var(--line-strong);
       background: var(--tint);
       color: var(--ink);
-      font-weight: 500;
+      box-shadow: inset 0 0 0 1px rgba(32, 175, 193, 0.08);
     }
 
     .card {
-      padding: 18px;
+      padding: 20px;
       margin-bottom: 14px;
     }
 
-    .form-grid { display: grid; gap: 14px; }
+    .form-grid { display: grid; gap: 15px; }
 
-    .field { display: grid; gap: 7px; }
+    .field { display: grid; gap: 8px; }
 
     label,
     .counter-label {
       font-size: 12px;
+      font-weight: 600;
       color: var(--muted);
       text-transform: uppercase;
     }
@@ -236,23 +335,28 @@
     input,
     textarea {
       width: 100%;
-      min-height: 48px;
+      min-height: 50px;
       border: 1px solid var(--line);
-      border-radius: 13px;
-      background: white;
+      border-radius: 14px;
+      background: var(--card-elevated);
       color: var(--ink);
-      padding: 12px 13px;
+      padding: 13px 14px;
       outline: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
     }
 
+    input::placeholder,
+    textarea::placeholder { color: var(--muted); opacity: 0.82; }
+
     textarea {
-      min-height: 96px;
+      min-height: 104px;
       resize: vertical;
     }
 
     input:focus,
     textarea:focus {
-      border-color: var(--ink);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(32, 175, 193, 0.16);
     }
 
     .category-grid { display: grid; gap: 10px; }
@@ -260,10 +364,22 @@
     .category-card {
       position: relative;
       display: block;
-      padding: 14px;
+      padding: 15px 15px 15px 18px;
       border: 1px solid var(--line);
-      border-radius: 15px;
-      background: white;
+      border-radius: 16px;
+      background: var(--card-elevated);
+      transition: border-color 160ms ease, background 160ms ease, transform 140ms ease;
+    }
+
+    .category-card::before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 14px;
+      bottom: 14px;
+      width: 3px;
+      border-radius: 999px;
+      background: transparent;
     }
 
     .category-card input {
@@ -278,20 +394,25 @@
     .category-card:has(input:checked) {
       border-color: var(--line-strong);
       background: var(--tint);
+      box-shadow: 0 0 0 3px rgba(32, 175, 193, 0.10);
     }
+
+    .category-card:has(input:checked)::before { background: var(--accent-strong); }
 
     .category-title {
       display: block;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
+      padding-left: 8px;
       font-weight: 700;
-      letter-spacing: -0.03em;
+      letter-spacing: -0.02em;
     }
 
     .category-desc {
       display: block;
+      padding-left: 8px;
       color: var(--muted);
       font-size: 14px;
-      line-height: 1.35;
+      line-height: 1.38;
     }
 
     .counter-card {
@@ -299,16 +420,16 @@
       justify-content: space-between;
       gap: 12px;
       align-items: center;
-      padding: 15px;
-      border: 1px solid var(--line);
-      border-radius: 15px;
+      padding: 16px;
+      border: 1px solid var(--line-strong);
+      border-radius: 16px;
       background: var(--tint);
     }
 
     .counter-value {
-      font-family: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 28px;
-      font-weight: 500;
+      color: var(--accent-strong);
+      font-size: 30px;
+      font-weight: 700;
     }
 
     .instructions {
@@ -326,33 +447,35 @@
       z-index: 20;
       width: calc(100% - 32px);
       max-width: 448px;
-      padding: 13px 16px;
-      border: 1px solid var(--ink);
-      border-radius: 999px;
-      background: var(--ink);
-      color: white;
+      padding: 14px 16px;
+      border: 1px solid var(--accent);
+      border-radius: 18px;
+      background: var(--card);
+      color: var(--ink);
       text-align: center;
       font-weight: 700;
+      box-shadow: var(--shadow);
       transform: translate(-50%, 120px);
       transition: transform 180ms ease;
     }
 
     .toast.show { transform: translate(-50%, 0); }
-    .toast.error { background: var(--danger); border-color: var(--danger); }
+    .toast.error { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
 
     dialog {
       width: calc(100% - 32px);
       max-width: 430px;
       padding: 0;
-      border: 1px solid var(--ink);
-      border-radius: 20px;
-      background: white;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--card);
       color: var(--ink);
+      box-shadow: var(--shadow);
     }
 
-    dialog::backdrop { background: rgba(29, 29, 27, 0.48); }
+    dialog::backdrop { background: rgba(0, 0, 0, 0.62); }
 
-    .dialog-inner { padding: 20px; }
+    .dialog-inner { padding: 22px; }
 
     .dialog-actions {
       display: grid;
@@ -362,19 +485,37 @@
 
     .small-note {
       margin: 8px 0 0;
-      font-size: 13px;
+      font-size: 14px;
+    }
+
+    .app-footer {
+      padding: 8px 0 2px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
     }
 
     @supports not selector(:has(*)) {
       .category-card.selected {
         border-color: var(--line-strong);
         background: var(--tint);
+        box-shadow: 0 0 0 3px rgba(32, 175, 193, 0.10);
       }
+
+      .category-card.selected::before { background: var(--accent-strong); }
     }
   </style>
 </head>
 <body>
   <main class="app-shell">
+    <div class="app-brand-bar">
+      <img class="app-logo" src="logo-mleb.png" alt="Logo MLEB" />
+      <button id="themeToggle" class="theme-toggle" type="button" aria-label="Ganti ke mode terang" aria-pressed="true">
+        <span id="themeIcon" class="theme-icon" aria-hidden="true">☾</span>
+      </button>
+    </div>
+
     <section id="idleScreen" class="idle-screen">
       <div class="brand-card">
         <p class="eyebrow">MTP TMII ke MLEB</p>
@@ -493,6 +634,8 @@
         </div>
       </section>
     </section>
+
+    <footer class="app-footer">MTP MLEB Visitor System</footer>
   </main>
 
   <dialog id="endDialog" aria-labelledby="endDialogTitle">
@@ -512,6 +655,12 @@
     const STORAGE_KEYS = {
       scriptUrl: "mtpMlebScriptUrl",
       session: "mtpMlebSession"
+    };
+
+    const THEME_STORAGE_KEY = "mtpMlebTheme";
+    const THEMES = {
+      dark: { icon: "☾", label: "Ganti ke mode terang" },
+      light: { icon: "☀", label: "Ganti ke mode gelap" }
     };
 
     const TEAM_NAME = "MTP TMII";
@@ -551,6 +700,8 @@
     const settingsForm = document.getElementById("settingsForm");
     const scriptUrl = document.getElementById("scriptUrl");
     const toast = document.getElementById("toast");
+    const themeToggle = document.getElementById("themeToggle");
+    const themeIcon = document.getElementById("themeIcon");
 
     let toastTimer;
 
@@ -584,6 +735,23 @@
 
     function clearSession() {
       localStorage.removeItem(STORAGE_KEYS.session);
+    }
+
+    function applyTheme(theme) {
+      const selectedTheme = theme === "light" ? "light" : "dark";
+      document.documentElement.dataset.theme = selectedTheme;
+      themeIcon.textContent = THEMES[selectedTheme].icon;
+      themeToggle.setAttribute("aria-label", THEMES[selectedTheme].label);
+      themeToggle.setAttribute("aria-pressed", selectedTheme === "dark" ? "true" : "false");
+    }
+
+    function saveTheme(theme) {
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
+      applyTheme(theme);
+    }
+
+    function loadTheme() {
+      applyTheme(localStorage.getItem(THEME_STORAGE_KEY) || "dark");
     }
 
     function showToast(message, isError = false) {
@@ -718,6 +886,11 @@
       });
     }
 
+    themeToggle.addEventListener("click", () => {
+      const currentTheme = document.documentElement.dataset.theme === "light" ? "light" : "dark";
+      saveTheme(currentTheme === "light" ? "dark" : "light");
+    });
+
     startSessionButton.addEventListener("click", startSession);
 
     endSessionButton.addEventListener("click", () => {
@@ -814,6 +987,7 @@
       showToast("URL tersimpan");
     });
 
+    loadTheme();
     buildCategories();
     updateBrochureSpread();
     scriptUrl.value = localStorage.getItem(STORAGE_KEYS.scriptUrl) || "";
