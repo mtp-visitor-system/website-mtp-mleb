@@ -95,6 +95,28 @@
       filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.18));
     }
 
+    .app-shell:has(#idleScreen:not(.hidden)) {
+    padding-top: clamp(10px, 3vh, 24px);
+    }
+
+    .app-shell:has(#idleScreen:not(.hidden)) .app-brand-bar {
+      min-height: auto;
+      margin-bottom: 18px;
+      padding-top: 0;
+      flex-direction: column;
+      gap: 14px;
+    }
+    
+    .app-shell:has(#idleScreen:not(.hidden)) .app-logo {
+      width: clamp(220px, 64vw, 340px);
+      max-width: 100%;
+    }
+    
+    .app-shell:has(#idleScreen:not(.hidden)) .theme-toggle {
+      position: static;
+      transform: none;
+    }
+
     .theme-toggle {
       position: absolute;
       right: 0;
@@ -131,6 +153,11 @@
       flex-direction: column;
       justify-content: center;
       gap: 18px;
+    }
+
+    .app-shell:has(#idleScreen:not(.hidden)) .idle-screen {
+    min-height: auto;
+    justify-content: flex-start;
     }
 
     .brand-card,
